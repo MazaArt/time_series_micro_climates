@@ -1,0 +1,150 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2024
+
+% ready for submission
+\usepackage[final]{neurips_2024}
+
+% to compile a preprint version, eg, for submission to arXiv, add add the
+% [preprint] option:
+%     \usepackage[preprint]{neurips_2024}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2024}
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2024}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{authblk}
+
+%------------------------------------------------------------------------------
+% Project Proposal: Predicting Urban Micro-Climates
+%------------------------------------------------------------------------------
+\title{Predicting Micro-Climates: Time-Series Approach to Hourly Temperature and Humidity Forecasting \\ 
+\large CS 439 - Project Proposal}
+
+\author{%
+      \begin{center}
+        {\large March 16, 2026} \\
+        {\large Anna Lu (al1678)} \\
+        {\large Artem Ivaniuk (ai392)} \\
+        {\large Christopher DSouza (cd1001)} \\
+        \vspace{0.5cm}
+    \end{center}
+}
+
+\begin{document}
+
+\maketitle
+
+%------------------------------------------------------------------------------
+% 1. Title and Team Information (already included above)
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% 2. Research Question and Motivation
+%------------------------------------------------------------------------------
+\section{Research Question and Motivation}
+
+Research Question: To what extent can a multivariate time-series model accurately forecast micro-climate conditions, specifically hourly temperature and relative humidity, using publicly available meteorological data?
+
+Motivation: 
+As opposed to macroenvironments that are well-described by their general pattern, local areas exhibit distinct temperature changes, climate factors, humidity perseverance, and can be much more interesting for modeling due to each individual location's combination of factors -- going even as far as building density, vegetation, and topography. These minute changes from area to area can be linked to the downflow effects on energy consumption, public health, air quality, collective decisions in urban planning, and more. 
+
+
+Our dive into this research question is motivated by two main factors. First, as Math, Econ, and CS majors, we are highly interested in learning to apply the data science skills we learn in this class to data that breaks the `independence' assumption between nearby variables and lean into the world of time-series forecasting. Second, accurate microclimate predictions would have serious implications on the individual decisions in housing decisions, health upkeep, and green energy concerns. In the ideal situation, we would want our project to be an MVP for empowering local officials to know their microclimates in better detail and be able to issue more accurate climate-oriented decisions. 
+%------------------------------------------------------------------------------
+% 3. Data Sources
+%------------------------------------------------------------------------------
+\section{Data Sources}
+
+We will be primarily using data from the NOAA National Climatic Data Center (NCDC), which is accessible through the Climate Data Online (CDO) tool. Our main data sources will be the following:
+
+\begin{itemize}
+    \item Daily Summaries (GHCNd): For long-term historical context and to compute climatological baselines. This dataset will provides us the daily max/min temperatures and precipitation from a global network of stations.
+    \item Local Climatological Data (LCD): This will be our primary data source for hourly resolution. The LCD provides hourly observations of temperature, humidity, dew point, wind speed, wind direction, pressure, and sky conditions for approximately 1000 stations across the U.S. since 2005. Which will be essential for us to form the multivariate time-series for our target variables (temperature and humidity) and our exogenous features (wind, pressure).
+    \item Hourly Precipitation Data: In order to incorporate the impact of rainfall on temperature and humidity, we will also be using the Hourly Precipitation dataset for selected U.S. stations.
+\end{itemize}
+
+Data Acquisition and Preprocessing: Data will be accessed via the NCEI CDO web interface or FTP servers. We will be focusing mainly on major metropolitan area with dense station coverage (eg, New York City or Chicago) for a multi-year period (eg, 2015-2025). Preprocessing steps will include:
+\begin{enumerate}
+    \item Identifying and selecting stations with complete or nearly complete hourly records.
+    \item Merging data from multiple sources (LCD, precipitation) into a unified time-series dataframe.
+    \item Handling missing values through interpolation or forward-filling, depending on the gap length.
+    \item Engineering temporal features such as hour of day, day of year, and season to capture cyclical patterns.
+    \item Normalizing/standardizing input features for model training.
+\end{enumerate}
+
+Potential Challenges: The quality and completeness of the data will most likely be the main obstacles in doing this project due to factors mostly outside of anyone's influence. The documentation for our data sources state that station outages, sensor errors, and inconsistencies in reporting can lead to gaps or erroneous readings, not even mentioning the inconsistencies between the different data providers, so we aim to fix this in the preprocessing step. 
+
+%------------------------------------------------------------------------------
+% 4. Methodology and Analysis Plan
+%------------------------------------------------------------------------------
+\section{Methodology and Analysis Plan}
+
+We will start with exploratory data analysis, then modeling, and then compare models' evaluation.
+
+Exploratory Data Analysis: We will begin by visualizing the data to understand the seasonal patterns, correlations between variables (eg, temperature vs. wind direction), and the distribution of extreme events. This step will inform feature engineering and model selection. Our plan, as of right now, is that this step will be the one where we apply the majority of skills that we learn from this class, since most of our modeling will rely on time-series oriented models.
+
+Modeling Approach: We will frame this as a supervised multivariate time-series regression problem. The goal is to predict temperature and humidity for a forecast horizon $h$ given a window of past observations. We plan to implement and compare several models:
+    \begin{itemize}
+        \item Baseline Factor Models: Ignoring the time series component of the data, evaluate the micro-climate variables and their contributions to the temperature and humidity.
+        \item Baseline Time Series Models: Simple persistence model (forecast = last observed value) and Seasonal ARIMA.
+        \item Machine Learning and Deep Learning$^*$ Time Series Models: XGBoost and Random Forest regressors, using lagged features and rolling window statistics as inputs, and Long Short-Term Memory (LSTM) networks and Transformer-based models. 
+        
+        *Caveat: Whether we get to DL models is dependent on time permitting.
+    \end{itemize}
+
+Evaluation: Models will be evaluated using Mean Absolute Error (MAE) and Mean Absolute Percentage Error (MAPE) for both temperature and humidity. We will use time-series cross-validation to ensure robust performance estimates and prevent data leakage -- this is also a step where we aim to dive deeper into the individual models and see how their performance is best evaluated at scale, which could lead to having accuracy metrics that are model-specific as additional information.
+
+Tools and Libraries: The project will be implemented in Python, utilizing libraries such as Pandas (data manipulation), Matplotlib/Seaborn (visualization), Scikit-learn (baseline models and metrics), XGBoost, Statsmodels (SARIMA), and TensorFlow/PyTorch (deep learning models)
+
+%------------------------------------------------------------------------------
+% 5. Expected Outcomes and Evaluation
+%------------------------------------------------------------------------------
+\section{Expected Outcomes and Evaluation}
+
+Expected Findings: We hope that deep learning models (LSTMs/Transformers) can outperform both classical statistical and tree-based methods by effectively learning the complex, non-linear interactions between multiple meteorological variables over time. We also expect to see that after incorporating features like wind and pressure it will improves forecast accuracy over an univariate approach. The analysis should also highlight which exogenous variables are most predictive for a short-term urban micro-climate forecasting.
+
+Evaluation Criteria: Success will be measured by the predictive accuracy (MAE, RMSE) of our best model on a held-out test set. Once we have the accuracy measurements of the models we built, the ideal comparison would also involve the current industry-level numerical weather prediction models so that we can see how accurate our models are in relation to the existing ones.
+
+Broader Implications and Extensions: A successful project would show that creating highly localized forecasting systems with open data is feasible. Some possible extensions include:
+\begin{itemize}
+    \item Including geospatial data (such as land use, elevation, vegetation indices from satellites) to improve spatial generalization to areas without weather stations.
+    \item Creating a probabilistic forecasting model to estimate uncertainty.
+    \item Developing a real-time forecasting dashboard for any city to show forecasts and increase public knowledge of variability in micro-climates
+\end{itemize}
+Ultimately, this project could be foundational in striving for more resilient and data-driven urban environments.
+
+%------------------------------------------------------------------------------
+% References (using sample format from neurips_2024.tex)
+%------------------------------------------------------------------------------
+\section*{References}
+
+\medskip
+{
+\small
+[1] Shi, X., Chen, Z., Wang, H., Yeung, D.Y., Wong, W.K., \& Woo, W.C. (2015). Convolutional LSTM network: A machine learning approach for precipitation nowcasting. \textit{In Advances in Neural Information Processing Systems}.
+
+[2] NOAA National Centers for Environmental Information. Climate Data Online (CDO). \url{https://www.ncei.noaa.gov/cdo-web/} Accessed: 2026-03-15.
+
+[3] NOAA National Centers for Environmental Information. Global Historical Climatology Network - Daily (GHCNd). \url{https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily}
+
+[4] NOAA National Centers for Environmental Information. Local Climatological Data (LCD). \url{https://www.ncei.noaa.gov/products/land-based-station/local-climatological-data}
+
+[5] NOAA National Centers for Environmental Information. Global Hourly - Integrated Surface Database. \url{https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database}
+
+}
+
+\end{document}
