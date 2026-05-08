@@ -1,0 +1,3 @@
+# Make a copy and name this ".env"
+
+NOAA_TOKEN=XXX
